@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    container:
+      image: ros:humble-ros-base
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: src/astramind_ws
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y curl unzip
+          rosdep update
+          rosdep install --from-paths src/astramind_ws --ignore-src -r -y
+
+      - name: Cache LibTorch
+        id: libtorch-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/libtorch
+          key: libtorch-cxx11-abi-shared-with-deps-2.7.1-cpu
+
+      - name: Install LibTorch
+        if: steps.libtorch-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -sSL -o /tmp/libtorch.zip "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.7.1%2Bcpu.zip"
+          unzip -q /tmp/libtorch.zip -d /opt/
+          rm /tmp/libtorch.zip
+
+      - name: Build
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon build --symlink-install
+
+      - name: Test
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon test
+          colcon test-result --verbose
