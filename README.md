@@ -91,8 +91,8 @@ lcov --list /tmp/coverage_filtered.info
 |---|---|---|
 | Inference latency | < 50ms/frame | Passing (gtest) |
 | Docker runtime memory | < 250MB | ~206MB |
-| Core node line coverage | > 85% | 96.7% |
-| `colcon test` | all suites pass | 70 tests, 0 failures |
+| Core node line coverage | > 85% | 100% (120/120 lines) |
+| `colcon test` | all suites pass | 81 tests, 0 failures (CI green) |
 
 ## CI
 
