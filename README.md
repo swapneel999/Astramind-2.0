@@ -62,6 +62,16 @@ Example:
 ros2 launch astramind_core astramind_bringup.launch.py inference_threshold:=0.3 telemetry_rate_hz:=5.0
 ```
 
+## Training a real model
+
+The shipped `astramind_model.pt` is an untrained demo network. `train_model.py` trains an autoencoder on **nominal** telemetry and exports a TorchScript model with normalization and score calibration baked in, so the C++ node needs no changes. Use `torch==2.7.*` to match the LibTorch the node links against.
+
+```bash
+python train_model.py --data nominal_telemetry.csv   # 10 columns, order as in generate_model.py
+```
+
+`--synthetic 20000` trains on mock data as a pipeline check only. After training, re-tune `inference_threshold` for the new score distribution.
+
 ## Docker
 
 Multi-stage build (`ros:humble-ros-base` base): stage 1 builds the workspace and downloads LibTorch; stage 2 is a minimal runtime image carrying only the compiled binaries, LibTorch's shared libraries, and the model file.
