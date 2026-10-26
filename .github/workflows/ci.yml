@@ -9,18 +9,21 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ros:humble-ros-base
+    defaults:
+      run:
+        shell: bash
+        working-directory: astramind_ws
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          path: src/astramind_ws
 
       - name: Install dependencies
         run: |
           apt-get update
           apt-get install -y curl unzip
+          (rosdep init || true)
           rosdep update
-          rosdep install --from-paths src/astramind_ws --ignore-src -r -y
+          rosdep install --from-paths src --ignore-src -r -y
 
       - name: Cache LibTorch
         id: libtorch-cache
@@ -37,13 +40,11 @@ jobs:
           rm /tmp/libtorch.zip
 
       - name: Build
-        shell: bash
         run: |
           source /opt/ros/humble/setup.bash
           colcon build --symlink-install
 
       - name: Test
-        shell: bash
         run: |
           source /opt/ros/humble/setup.bash
           colcon test
